@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Template
+metadata:
+  labels:
+    provider: fabric8
+    group: coreos-registry-monitor
+  name: registry-monitor-config
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: registry-monitor-config
+  data:
+    username: ${USERNAME}
+    password: ${PASSWORD}
+    registry-host: ${REGISTRY_SVC_IP}
+    repository: ${REGISTRY_SVC_IP}:5000/openshift/wildfly
+    base-layer-id: docker.io/centos:7
+parameters:
+- name: USERNAME
+  value: admin
+- name: PASSWORD
+  required: true
+- name: REGISTRY_SVC_IP
+  required: true
