@@ -12,6 +12,8 @@ data:
       path: /metrics
       collection_interval_secs: 60
       metrics:
+      - name: monitor_success
+        type: counter
       - name: monitor_failure
         type: counter
       - name: monitor_pull_count
