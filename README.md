@@ -26,21 +26,31 @@ pull image
 
     docker pull docker.io/centos:7
 
-create project
+As the registry-monitor runs under the 'privileged' SCC (a requirement of docker socket), we'll create a new project to segregate it from the rest of our estate:
 
     oc new-project registry-monitoring
 
+
 create configmap for settings
 
-    oadm policy add-scc-to-user privileged system:serviceaccount:registry-monitoring:registry-monitor
+    oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:registry-monitoring:registry-monitor
 
     REGISTRY_SVC_IP=$(oc get svc docker-registry -n default -o jsonpath='{.spec.clusterIP}')
     USER_TOKEN=$(oc whoami -t)
-    oc process -f https://raw.githubusercontent.com/garethahealy/registry-ocp-monitoring/master/ocp-template/registry-monitor-config.yaml REGISTRY_SVC_IP=$REGISTRY_SVC_IP PASSWORD=$USER_TOKEN | oc create -f -
+    
 
+
+    
+    oc process -f https://raw.githubusercontent.com/garethahealy/registry-ocp-monitoring/master/ocp-template/registry-monitor-config.yaml REGISTRY_SVC_IP=$REGISTRY_SVC_IP PASSWORD=$USER_TOKEN | oc create -f -
+    oc create -f https://raw.githubusercontent.com/garethahealy/registry-ocp-monitoring/master/ocp-template/registry-monitor-hawkular-agent.yaml
+    
 create pod
 
     oc process -f https://raw.githubusercontent.com/garethahealy/registry-ocp-monitoring/master/ocp-template/registry-monitor.yaml | oc create -f -
+
+Finally, we want to verify that the Hawkular OpenShift Agent is collecting the metrics:
+
+    oc logs -n openshift-infra $(oc get pod -n openshift-infra -oname -lmetrics-infra=agent)
 
 ## Conclusion
 todo

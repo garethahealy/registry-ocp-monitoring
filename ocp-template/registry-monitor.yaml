@@ -12,6 +12,27 @@ objects:
   apiVersion: v1
   metadata:
     name: registry-monitor
+  apiVersion: v1
+  kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: ${APP}-hawkular-agent
+  data:
+    hawkular-openshift-agent: |
+      endpoints:
+      - type: prometheus
+        protocol: "http"
+        port: 9779
+        path: /metrics
+        metrics:
+        - name: monitor_success
+          type: counter
+        - name: monitor_failure
+          type: counter
+        - name: monitor_pull_count
+          type: counter
+        - name: monitor_push_count
+          type: counter
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -25,8 +46,6 @@ objects:
       type: Recreate
     template:
       metadata:
-        annotations:
-          hawkular-openshift-agent: ${HAWKULAR_AGENT_CONFIGMAP}
         labels:
           provider: fabric8
           group: coreos-registry-monitor
@@ -77,15 +96,20 @@ objects:
           volumeMounts:
           - mountPath: /var/run/docker.sock
             name: docker-socket
+          - mountPath: /run/configmaps/garethahealy.com/hawkular-agent
+            name: ${APP}-hawkular-agent
         serviceAccountName: registry-monitor
         volumes:
         - name: docker-socket
           hostPath:
             path: /var/run/docker.sock
+        - name: hawkular-openshift-agent
+          configMap:
+            name: ${APP}-hawkular-agent
     triggers:
     - type: ConfigChange
 parameters:
 - name: APP
   value: registry-monitor
-- name: HAWKULAR_AGENT_CONFIGMAP
-  value: registry-monitor-hawkular-agent
+
+
