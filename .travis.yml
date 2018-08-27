@@ -1,7 +1,7 @@
 sudo: required
 dist: trusty
 services:
-  - docker
+- docker
 script:
-  - docker pull golang
-  - docker pull garethahealy/registry-monitor:1.0
+- docker pull golang
+- docker pull garethahealy/registry-monitor:1.0
